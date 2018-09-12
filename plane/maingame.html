@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> Plane </title>
+<style media="screen">
+#id-canvas{
+  border: 1px black solid;
+  background: url(image/background.png);
+}
+</style>
+<script src='js/Game.js'></script>
+<script src='js/plane.js'></script>
+<script src='js/Bullt.js'></script>
+<script src='js/Enemy.js'></script>
+</head>
+<body>
+  <canvas id="id-canvas" width="400" height="800"></canvas>
+<script>
+var __main =function()
+{
+  var game=new Game();
+  var plane=new Plane();
+  game.registerAction('a',function(){plane.moveleft()})
+  game.registerAction('d',function(){plane.moveright()})
+  game.registerAction('s',function(){plane.movedown()})
+  game.registerAction('w',function(){plane.moveup()})
+  game.registerAction('j',function(){game.newBullt()})
+  window.addEventListener('keydown',function(event){
+    // console.log(event)
+    if(event.key=='p')
+    {
+      game.pause=!game.pause;
+      //console.log(game.pause)
+    }
+  })
+  game.newEnemy=function()
+  {
+    if(game.pause)
+    {
+      var enemy=new Enemy();
+      enemy.x=Math.random()*(300+1)
+      game.es.push(enemy)
+    }
+    else {
+
+    }
+  }
+  game.newBullt=function()
+  {
+    var bullt=Bullt(plane);
+    game.bs.push(bullt)
+  }
+  //image1是子弹。image2是敌机
+  game.rush=function(image1,image2)
+  {
+
+    if(image1.x<(image2.x+image2.w)&&image1.x>image2.x)
+    {
+      if(image1.y<(image2.y+image2.h)&&image1.y>image2.y)
+         {
+           return true;
+         }
+
+    }
+    return false;
+  }
+  game.update=function()
+  {
+    if(game.pause)
+    {
+      for(var i=0;i<game.bs.length;i++)
+      {
+        var b=game.bs[i];
+        if(game.bs[i].y+game.bs[i].h<0){
+          game.bs.shift();
+        }
+        else {
+          game.bs[i].y-=50;
+        }
+      }
+      for(var i=0;i<game.es.length;i++)
+      {
+        var e=game.es[i];
+        if(game.es[i].y>800){
+          game.es.shift();
+        }
+        else {
+          game.es[i].y+=10;
+        }
+      }
+      for(var i=0;i<game.bs.length;i++)
+         for(var j=0;j<game.es.length;j++)
+         {
+           if(game.rush(game.bs[i],game.es[j])&&game.es[j].kill)
+           {
+             game.score+=10;
+             game.es[j].kill=0;
+             game.es[j].boom();
+           }
+         }
+    }
+    else {
+
+    }
+
+  }
+  game.draw=function()
+  {
+    game.ctx.clearRect(0,0,400,800);
+    game.drawImage(plane)
+    for(var i=0;i<game.bs.length;i++)
+    {
+      game.drawImage(game.bs[i]);
+    }
+    for(var i=0;i<game.es.length;i++)
+    {
+      if(game.es[i].kill)
+      {
+        game.drawImage(game.es[i])
+      }
+      else if(game.es[i].state<7)
+      {
+        game.drawImage(game.es[i])
+        game.es[i].boom();
+      }
+    }
+    game.ctx.save()
+    game.ctx.font='20px serif'
+    game.ctx.fillText("SCORE:"+game.score,10,790)
+    game.ctx.restore()
+    game.shiney();
+
+}
+
+}
+__main();
+</script>
+</body>
